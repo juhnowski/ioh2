@@ -11,7 +11,7 @@ import spark.ModelAndView;
 // http://localhost:4567
 public class Server {
     public static Data data = new Data();
-
+    private static USBConnector conn;
 
     private static final int TEMPERATURE_START_MAX = 32;
     private static final int TEMPERATURE_START_MIN = 10;
@@ -20,6 +20,17 @@ public class Server {
     public static final int TEMPERATURE_STOP_MIN = TEMPERATURE_START_MIN + 2;
 
     public static void main(String[] args) {
+        try
+        {
+            conn = new USBConnector();
+            conn.connect("/dev/ttyACMxx"); //TODO:прописать правильный порт
+        }
+        catch ( Exception e )
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
         get("/", (req, res) -> "<html><header><meta http-equiv=\"refresh\" content=\"0; url=http://192.168.0.149:3000\" /></header></html>");
 
         get("/temperature/now", (req, res) -> {
@@ -95,6 +106,17 @@ public class Server {
         put("/switched", (req, res) -> "true"); //изменить состояние системы
 
         get("/state",(req,res) -> getState());
+        
+        get("/on",(req,res)->{
+        	conn.command = 1;
+        	return "DONE";
+        });
+        
+        get("/off",(req,res)->{
+        	conn.command = 0;
+        	return "DONE";
+        });
+        
     }
 
     private static String getState(){
